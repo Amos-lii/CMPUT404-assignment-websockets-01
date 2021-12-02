@@ -127,6 +127,7 @@ def subscribe_socket(ws):
     # Copyright by Abram hindle  https://github.com/abramhindle/WebSocketsExamples/blob/master/chat.py
 
     # XXX: TODO IMPLEMENT ME
+    ws.send(json.dumps(myWorld.world()))
     client = Client()
     clients.append(client)
     g = gevent.spawn(read_ws, ws, client)
