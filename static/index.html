@@ -52,10 +52,14 @@ function drawCircle(context,entity) {
         var x = entity["x"];
         var y = entity["y"];
         //moveTo(x,y);
-        fillStyle = entity["colour"];
+        //reference from https://stackoverflow.com/questions/1484506/random-color-generator?page=2&tab=Votes
+        fillStyle = '#'+Math.floor(Math.random()*16777215).toString(16);
         strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
-        stroke();                                
+        arc(x, y, (entity["radius"])?entity["radius"]:50, 2*Math.PI,false);
+        lineTo(x,y);
+        stroke();
+        globalAlpha = 1;
+        fill();
     }
 }
 
@@ -230,16 +234,17 @@ mouse = (function() {
 
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
+        //reference from https://stackoverflow.com/questions/1484506/random-color-generator?page=2&tab=Votes
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'#'+Math.floor(Math.random()*16777215).toString(16)});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'#'+Math.floor(Math.random()*16777215).toString(16)});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
+    addEntityWithoutName({'x':x,'y':y,'colour':'#'+Math.floor(Math.random()*16777215).toString(16),
                           'radius':10});
 });
 
@@ -254,6 +259,7 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
+        debug("WebSocket is opened");
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -261,7 +267,13 @@ function wsSetup() {
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            //XXX: TODO What are you going to do here?
+            var packet = JSON.parse(msg.data)
+            for (key of Object.keys(packet)) {
+            world[key] = packet[key]
+            drawNextFrame();
+            drawFrame();
+          }
         } catch (e) {
             alert("socket on message: " + e);
         }
